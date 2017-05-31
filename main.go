@@ -50,6 +50,20 @@ func DeleteFruitEndpoint(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(fruits)
 }
 
+func UpdateFruitEndpoint(w http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	var fruit Fruit
+	for index, item := range fruits {
+		if item.ID == params["id"] {
+			fruits = append(fruits[:index], fruits[index+1:]...)
+			_ = json.NewDecoder(req.Body).Decode(&fruit)
+			fruits = append(fruits, fruit)
+			break
+		}
+	}
+	json.NewEncoder(w).Encode(fruits)
+}
+
 func main() {
 	router := mux.NewRouter()
 	fruits = append(fruits, Fruit{ID: "1", Name: "Orange", Color: "Orange", Rating: 1})
@@ -58,5 +72,6 @@ func main() {
 	router.HandleFunc("/fruits/{id}", GetFruitsEndpoint).Methods("GET")
 	router.HandleFunc("/fruits", CreateFruitEndpoint).Methods("POST")
 	router.HandleFunc("/fruits/{id}", DeleteFruitEndpoint).Methods("DELETE")
+	router.HandleFunc("/fruits/{id}", UpdateFruitEndpoint).Methods("PUT")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
